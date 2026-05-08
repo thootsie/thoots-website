@@ -49,7 +49,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify(data), {
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=300'
+                'Cache-Control': 'public, max-age=3600'
             }
         });
     } catch (err) {
