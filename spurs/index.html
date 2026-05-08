@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spurs Relegation Tracker - Trevor Hoots</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Tracker-specific styles */
+        .tracker-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--bg-light);
+        }
+
+        .tracker-header {
+            text-align: center;
+            padding: 3rem 1rem 1rem;
+        }
+
+        .tracker-header h1 {
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .tracker-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .tracker-container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 3rem;
+        }
+
+        .gap-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .gap-card .label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .gap-card .points {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .gap-card .points.safe { color: #16a34a; }
+        .gap-card .points.warning { color: #d97706; }
+        .gap-card .points.danger { color: #dc2626; }
+
+        .gap-card .subtitle {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .stat-box .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stat-box .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .tracker-section-title {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .result-item {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .result-item .match { font-size: 0.85rem; color: var(--text-dark); }
+        .result-item .score { font-weight: 700; font-size: 0.95rem; min-width: 50px; text-align: center; }
+        .result-item .date { font-size: 0.75rem; color: var(--text-light); min-width: 80px; text-align: right; }
+
+        .result-item.win { border-left: 3px solid #16a34a; }
+        .result-item.draw { border-left: 3px solid #d97706; }
+        .result-item.loss { border-left: 3px solid #dc2626; }
+
+        .table-container {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            margin-bottom: 2rem;
+        }
+
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-container th {
+            background: var(--bg-light);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-container td {
+            padding: 0.6rem 1rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        tr.spurs-row {
+            background: #eff6ff;
+        }
+
+        tr.spurs-row td {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        tr.relegation-row td {
+            color: #dc2626;
+        }
+
+        .relegation-zone-divider td {
+            border-top: 2px dashed #dc2626;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-light);
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            color: #dc2626;
+        }
+
+        .error-box p {
+            margin-top: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .tracker-footer {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.75rem;
+            padding: 1rem;
+        }
+
+        .tracker-footer a {
+            color: var(--text-light);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">TH</a>
+            <ul class="nav-menu">
+                <li><a href="/#about" class="nav-link">About</a></li>
+                <li><a href="/#skills" class="nav-link">Skills</a></li>
+                <li><a href="/#experience" class="nav-link">Experience</a></li>
+                <li><a href="/#certifications" class="nav-link">Certifications</a></li>
+                <li><a href="/#contact" class="nav-link">Contact</a></li>
+                <li><a href="/spurs/" class="nav-link active">Spurs Tracker</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="tracker-page">
+        <div class="tracker-header">
+            <h1>⚽ Spurs Relegation Tracker</h1>
+            <p>How close are Tottenham to the drop?</p>
+        </div>
+
+        <div class="tracker-container">
+            <div id="tracker-app">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Fetching Premier League data...</div>
+                </div>
+            </div>
+
+            <div class="tracker-footer">
+                Data from <a href="https://www.football-data.org">football-data.org</a> &middot; Updates on page load
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Trevor Hoots. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const SPURS_ID = 73;
+        const app = document.getElementById('tracker-app');
+
+        async function fetchData(endpoint) {
+            const res = await fetch(endpoint);
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`API error: ${res.status} — ${body}`);
+            }
+            return res.json();
+        }
+
+        function getGapClass(gap) {
+            if (gap >= 10) return 'safe';
+            if (gap >= 4) return 'warning';
+            return 'danger';
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+
+        function getResultClass(match) {
+            const spursHome = match.homeTeam.id === SPURS_ID;
+            const homeGoals = match.score.fullTime.home;
+            const awayGoals = match.score.fullTime.away;
+            if (homeGoals === awayGoals) return 'draw';
+            if (spursHome && homeGoals > awayGoals) return 'win';
+            if (!spursHome && awayGoals > homeGoals) return 'win';
+            return 'loss';
+        }
+
+        function getOrdinal(n) {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return s[(v - 20) % 10] || s[v] || s[0];
+        }
+
+        function renderTracker(standings, matches) {
+            const table = standings.standings[0].table;
+            const spurs = table.find(t => t.team.id === SPURS_ID);
+            const eighteenth = table[17];
+            const gap = spurs.points - eighteenth.points;
+
+            const bottomHalf = table.slice(9);
+            const showTable = spurs.position <= 10
+                ? [spurs, ...bottomHalf]
+                : bottomHalf;
+
+            const spursMatches = matches.matches
+                .filter(m => m.status === 'FINISHED')
+                .slice(-8)
+                .reverse();
+
+            app.innerHTML = `
+                <div class="gap-card">
+                    <div class="label">Points above relegation zone</div>
+                    <div class="points ${getGapClass(gap)}">${gap >= 0 ? '+' : ''}${gap}</div>
+                    <div class="subtitle">${spurs.team.shortName} (${spurs.points} pts) vs 18th place ${eighteenth.team.shortName} (${eighteenth.points} pts)</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.position}${getOrdinal(spurs.position)}</div>
+                        <div class="stat-label">Position</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.points}</div>
+                        <div class="stat-label">Points</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.playedGames}</div>
+                        <div class="stat-label">Played</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.won}</div>
+                        <div class="stat-label">Won</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.draw}</div>
+                        <div class="stat-label">Drawn</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${spurs.lost}</div>
+                        <div class="stat-label">Lost</div>
+                    </div>
+                </div>
+
+                <h2 class="tracker-section-title">Recent Results</h2>
+                <div class="results-list">
+                    ${spursMatches.map(m => {
+                        const resultClass = getResultClass(m);
+                        const spursHome = m.homeTeam.id === SPURS_ID;
+                        const opponent = spursHome ? m.awayTeam.shortName : m.homeTeam.shortName;
+                        const venue = spursHome ? 'H' : 'A';
+                        const score = m.score.fullTime.home + ' - ' + m.score.fullTime.away;
+                        return '<div class="result-item ' + resultClass + '">' +
+                            '<span class="match">' + opponent + ' (' + venue + ')</span>' +
+                            '<span class="score">' + score + '</span>' +
+                            '<span class="date">' + formatDate(m.utcDate) + '</span>' +
+                            '</div>';
+                    }).join('')}
+                </div>
+
+                <h2 class="tracker-section-title">Bottom Half of Table</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${showTable.map(t => {
+                                const isSpurs = t.team.id === SPURS_ID;
+                                const isReleg = t.position >= 18;
+                                const isDivider = t.position === 18;
+                                let rowClass = '';
+                                if (isSpurs) rowClass = 'spurs-row';
+                                else if (isReleg) rowClass = 'relegation-row';
+                                if (isDivider) rowClass += ' relegation-zone-divider';
+                                return '<tr class="' + rowClass + '">' +
+                                    '<td>' + t.position + '</td>' +
+                                    '<td>' + t.team.shortName + '</td>' +
+                                    '<td>' + t.playedGames + '</td>' +
+                                    '<td>' + t.won + '</td>' +
+                                    '<td>' + t.draw + '</td>' +
+                                    '<td>' + t.lost + '</td>' +
+                                    '<td>' + (t.goalDifference > 0 ? '+' : '') + t.goalDifference + '</td>' +
+                                    '<td>' + t.points + '</td>' +
+                                    '</tr>';
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderError(message) {
+            app.innerHTML = '<div class="error-box">' +
+                '<strong>⚠️ ' + message + '</strong>' +
+                '<p>There may be an issue with the data source. Try refreshing in a moment.</p>' +
+                '</div>';
+        }
+
+        async function init() {
+            try {
+                const [standings, matches] = await Promise.all([
+                    fetchData('/api/standings'),
+                    fetchData('/api/matches')
+                ]);
+                renderTracker(standings, matches);
+            } catch (err) {
+                renderError(err.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
