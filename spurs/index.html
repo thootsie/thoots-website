@@ -124,9 +124,9 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
-        .result-item .match { font-size: 0.85rem; color: var(--text-dark); }
-        .result-item .score { font-weight: 700; font-size: 0.95rem; min-width: 50px; text-align: center; }
-        .result-item .date { font-size: 0.75rem; color: var(--text-light); min-width: 80px; text-align: right; }
+        .result-item .match { font-size: 0.85rem; color: var(--text-dark); flex: 1; }
+        .result-item .score { font-weight: 700; font-size: 0.95rem; width: 60px; text-align: center; flex-shrink: 0; }
+        .result-item .date { font-size: 0.75rem; color: var(--text-light); width: 80px; text-align: right; flex-shrink: 0; }
 
         .result-item.win { border-left: 3px solid #16a34a; }
         .result-item.draw { border-left: 3px solid #d97706; }
