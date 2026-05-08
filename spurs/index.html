@@ -238,8 +238,15 @@
                 <li><a href="/#experience" class="nav-link">Experience</a></li>
                 <li><a href="/#certifications" class="nav-link">Certifications</a></li>
                 <li><a href="/#contact" class="nav-link">Contact</a></li>
-                <li><a href="/spurs/" class="nav-link active">Spurs Tracker</a></li>
             </ul>
+            <button class="hamburger" aria-label="Menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+        <div class="dropdown-menu" aria-hidden="true">
+            <a href="/spurs/" class="dropdown-link active">⚽ Spurs Tracker</a>
         </div>
     </nav>
 
@@ -268,6 +275,50 @@
     </footer>
 
     <script>
+        // Hamburger menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+
+        if (hamburger && dropdownMenu) {
+            hamburger.addEventListener('click', () => {
+                const isOpen = dropdownMenu.classList.toggle('open');
+                hamburger.classList.toggle('active');
+                hamburger.setAttribute('aria-expanded', isOpen);
+                dropdownMenu.setAttribute('aria-hidden', !isOpen);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.navbar')) {
+                    dropdownMenu.classList.remove('open');
+                    hamburger.classList.remove('active');
+                    hamburger.setAttribute('aria-expanded', 'false');
+                    dropdownMenu.setAttribute('aria-hidden', 'true');
+                }
+            });
+
+            function handleMobileNav() {
+                const navMenu = document.querySelector('.nav-menu');
+                const existingMobileMenu = dropdownMenu.querySelector('.nav-menu-mobile');
+                if (window.innerWidth <= 768) {
+                    if (!existingMobileMenu && navMenu) {
+                        const mobileList = document.createElement('ul');
+                        mobileList.className = 'nav-menu-mobile';
+                        navMenu.querySelectorAll('.nav-link').forEach(link => {
+                            const li = document.createElement('li');
+                            li.appendChild(link.cloneNode(true));
+                            mobileList.appendChild(li);
+                        });
+                        dropdownMenu.insertBefore(mobileList, dropdownMenu.firstChild);
+                    }
+                } else {
+                    if (existingMobileMenu) existingMobileMenu.remove();
+                    dropdownMenu.classList.remove('open');
+                    hamburger.classList.remove('active');
+                }
+            }
+            handleMobileNav();
+            window.addEventListener('resize', handleMobileNav);
+        }
         const SPURS_ID = 73;
         const app = document.getElementById('tracker-app');
 
