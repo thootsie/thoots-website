@@ -47,6 +47,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
 .nav-logo {
@@ -75,6 +76,7 @@ body {
 
 /* Hamburger Button */
 .hamburger {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -96,14 +98,14 @@ body {
 .hamburger-line {
     display: block;
     width: 22px;
-    height: 2.5px;
+    height: 2px;
     background: var(--text-dark);
     border-radius: 2px;
     transition: transform 0.3s, opacity 0.3s;
 }
 
 .hamburger.active .hamburger-line:nth-child(1) {
-    transform: translateY(7.5px) rotate(45deg);
+    transform: translateY(7px) rotate(45deg);
 }
 
 .hamburger.active .hamburger-line:nth-child(2) {
@@ -111,35 +113,42 @@ body {
 }
 
 .hamburger.active .hamburger-line:nth-child(3) {
-    transform: translateY(-7.5px) rotate(-45deg);
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 /* Dropdown Menu */
 .dropdown-menu {
     display: none;
+    position: absolute;
+    top: 100%;
+    right: 20px;
+    margin-top: 0.5rem;
     background: var(--bg-white);
-    border-top: 1px solid var(--border-color);
-    padding: 0.75rem 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1001;
 }
 
 .dropdown-menu.open {
     display: block;
-    animation: slideDown 0.2s ease-out;
+    animation: dropIn 0.2s ease-out;
 }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-8px); }
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .dropdown-link {
     display: block;
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.75rem;
     color: var(--text-dark);
     text-decoration: none;
     font-weight: 500;
+    font-size: 0.9rem;
     border-radius: 6px;
     transition: background 0.2s, color 0.2s;
 }
@@ -338,6 +347,11 @@ body {
         display: none;
     }
 
+    .dropdown-menu {
+        right: 20px;
+        min-width: 200px;
+    }
+
     .dropdown-menu.open {
         display: flex;
         flex-direction: column;
@@ -354,8 +368,9 @@ body {
 
     .dropdown-menu.open .nav-menu-mobile .nav-link {
         display: block;
-        padding: 0.6rem 1rem;
+        padding: 0.5rem 0.75rem;
         border-radius: 6px;
+        font-size: 0.9rem;
     }
 
     .dropdown-menu.open .nav-menu-mobile .nav-link:hover {
