@@ -369,10 +369,12 @@
                 ? [spurs, ...bottomHalf]
                 : bottomHalf;
 
-            const spursMatches = matches.matches
-                .filter(m => m.status === 'FINISHED')
-                .slice(-8)
-                .reverse();
+            const spursMatches = matches && matches.matches
+                ? matches.matches
+                    .filter(m => m.status === 'FINISHED')
+                    .slice(-8)
+                    .reverse()
+                : [];
 
             app.innerHTML = `
                 <div class="gap-card">
@@ -410,7 +412,7 @@
 
                 <h2 class="tracker-section-title">Recent Results</h2>
                 <div class="results-list">
-                    ${spursMatches.map(m => {
+                    ${spursMatches.length > 0 ? spursMatches.map(m => {
                         const resultClass = getResultClass(m);
                         const spursHome = m.homeTeam.id === SPURS_ID;
                         const opponent = spursHome ? m.awayTeam.shortName : m.homeTeam.shortName;
@@ -421,7 +423,7 @@
                             '<span class="score">' + score + '</span>' +
                             '<span class="date">' + formatDate(m.utcDate) + '</span>' +
                             '</div>';
-                    }).join('')}
+                    }).join('') : '<p style="color:var(--text-light);text-align:center;padding:1rem;">Results temporarily unavailable. Refresh to try again.</p>'}
                 </div>
 
                 <h2 class="tracker-section-title">Bottom Half of Table</h2>
@@ -474,10 +476,12 @@
 
         async function init() {
             try {
-                const [standings, matches] = await Promise.all([
-                    fetchData('/api/standings'),
-                    fetchData('/api/matches')
-                ]);
+                const standingsPromise = fetchData('/api/standings');
+                const matchesPromise = fetchData('/api/matches').catch(() => null);
+
+                const standings = await standingsPromise;
+                const matches = await matchesPromise;
+
                 renderTracker(standings, matches);
             } catch (err) {
                 renderError(err.message);

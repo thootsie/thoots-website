@@ -11,17 +11,25 @@ export async function onRequest(context) {
     const SPURS_ID = 73;
 
     try {
-        // Use the competition matches endpoint filtered to Spurs
-        // dateFrom ensures we get recent matches without scanning the full season
+        // Use competition matches endpoint with date range — faster than /teams endpoint
         const today = new Date();
-        const threeMonthsAgo = new Date(today);
-        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-        const dateFrom = threeMonthsAgo.toISOString().split('T')[0];
+        const sixWeeksAgo = new Date(today);
+        sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
+        const dateFrom = sixWeeksAgo.toISOString().split('T')[0];
+        const dateTo = today.toISOString().split('T')[0];
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
 
         const res = await fetch(
-            `https://api.football-data.org/v4/teams/${SPURS_ID}/matches?status=FINISHED&dateFrom=${dateFrom}&limit=8`,
-            { headers: { 'X-Auth-Token': API_KEY } }
+            `https://api.football-data.org/v4/competitions/PL/matches?dateFrom=${dateFrom}&dateTo=${dateTo}&status=FINISHED`,
+            {
+                headers: { 'X-Auth-Token': API_KEY },
+                signal: controller.signal
+            }
         );
+
+        clearTimeout(timeout);
 
         if (!res.ok) {
             const body = await res.text();
@@ -33,8 +41,10 @@ export async function onRequest(context) {
 
         const data = await res.json();
 
-        // Filter to only PL matches on the client side
-        data.matches = data.matches.filter(m => m.competition.code === 'PL');
+        // Filter to only Spurs matches and take the last 8
+        data.matches = data.matches
+            .filter(m => m.homeTeam.id === SPURS_ID || m.awayTeam.id === SPURS_ID)
+            .slice(-8);
 
         return new Response(JSON.stringify(data), {
             headers: {
@@ -43,6 +53,12 @@ export async function onRequest(context) {
             }
         });
     } catch (err) {
+        if (err.name === 'AbortError') {
+            return new Response(JSON.stringify({ error: 'Request to football API timed out' }), {
+                status: 504,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
         return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
