@@ -1,15 +1,8 @@
 export async function onRequest(context) {
-  // Only gate preview/dev deployments — skip auth in production
-  const url = new URL(context.request.url);
-  const isProduction = url.hostname === context.env.PRODUCTION_HOSTNAME;
-
-  if (isProduction) {
-    return context.next();
-  }
-
   const DEV_PASSWORD = context.env.DEV_PASSWORD;
 
-  // If no password is configured, allow access (fail open for safety)
+  // If no password is configured, allow access freely.
+  // Set DEV_PASSWORD only on environments you want gated.
   if (!DEV_PASSWORD) {
     return context.next();
   }
